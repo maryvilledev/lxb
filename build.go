@@ -85,15 +85,15 @@ func (b *Build) startBuildContainer() error {
 	for {
 		br := false
 		time.Sleep(2500 * time.Millisecond)
-		s, err := b.client.ContainerStatus(b.ID)
+		s, err := b.client.ContainerState(b.ID)
 		if err != nil {
 			log.Debugln("Error getting container status: %v", err)
 			i++
 			continue
 		}
-		log.Debugf("[wait_for_net] status=%s IPs=%+v", s.Status.Status, s.Status.Ips)
-		if len(s.Status.Ips) > 0 {
-			for _, ip := range s.Status.Ips {
+		log.Debugf("[wait_for_net] status=%s IPs=%+v", s.Status, s.Ips)
+		if len(s.Ips) > 0 {
+			for _, ip := range s.Ips {
 				if ip.Interface != "lo" {
 					br = true
 					break
