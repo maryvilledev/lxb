@@ -1,6 +1,6 @@
-# LXB - **LX**D **B**uilder
+# LXB - LXC Builder
 
-LXB is an attempt to bring a little of the Docker image creation magic to LXD. It's quite a bit simpler than Docker's `Dockerfile` format, since LXC containers don't come with as many bells and whistles as Docker containers (i.e. layered filesystems, exposed ports, volume definitions, etc).
+LXB is an attempt to bring a little of the Docker image creation magic to LXD with an automated, templated build file.
 
 Use `go get` to install: `go get github.com/colebrumley/lxb`. Alternatively, use `glide` to make sure your dependencies are up to date with mine:
 ```bash
@@ -12,7 +12,7 @@ glide up
 go build
 ```
 
-Currently you must run LXB on a host running LXD, because LXB looks for the local unix socket. In the future I'd like to add support for calling remote daemons, but for now it's set to look only for a local daemon (you can however work on a remote via the local daemon with the `--remote` flag)
+Currently you must run LXB on a host running LXD since LXB is hard coded to look for a local unix socket. In the future I'd like to add support for calling remote daemons. You can however _work_ on a remote via the local daemon with the `--remote` flag.
 
 ## usage
 ```bash
