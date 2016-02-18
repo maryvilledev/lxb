@@ -11,5 +11,4 @@ dependencies:
 
 test:
   override:
-    - go test
     - go build -o $CIRCLE_ARTIFACTS/lxb
