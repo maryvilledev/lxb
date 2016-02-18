@@ -6,5 +6,8 @@ dependencies:
   override:
     - go get github.com/Masterminds/glide
     - glide up
-    - go build -o $CIRCLE_ARTIFACTS/lxb
 
+test:
+  override:
+    - go test
+    - go build -o $CIRCLE_ARTIFACTS/lxb
