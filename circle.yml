@@ -1,0 +1,10 @@
+machine:
+  environment:
+    GO15VENDOREXPERIMENT: 1
+
+dependencies:
+  override:
+    - go get github.com/Masterminds/glide
+    - glide up
+    - go build -o $CIRCLE_ARTIFACTS/lxb
+
