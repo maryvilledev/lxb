@@ -12,6 +12,8 @@ glide up
 go build
 ```
 
+Currently you must run LXB on a host running LXD, because LXB looks for the local unix socket. In the future I'd like to add support for calling remote daemons, but for now it's set to look only for a local daemon (you can however work on a remote via the local daemon with the `--remote` flag)
+
 ## usage
 ```bash
 NAME:
