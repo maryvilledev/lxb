@@ -5,8 +5,9 @@ machine:
 
 dependencies:
   override:
+    - rm -Rf $GOPATH/src
     - go get github.com/Masterminds/glide
-    - glide install --cache-gopath
+    - glide up --cache-gopath
     - mkdir -p $GOPATH/src/github.com/colebrumley; ln -s $(pwd) $GOPATH/src/github.com/colebrumley/lxb
 
 test:
