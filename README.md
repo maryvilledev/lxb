@@ -2,6 +2,16 @@
 
 LXB is an attempt to bring a little of the Docker image creation magic to LXD. It's quite a bit simpler than Docker's `Dockerfile` format, since LXC containers don't come with as many bells and whistles as Docker containers (i.e. layered filesystems, exposed ports, volume definitions, etc).
 
+Use `go get` to install: `go get github.com/colebrumley/lxb`. Alternatively, use `glide` to make sure your dependencies are up to date with mine:
+```bash
+go get github.com/Masterminds/glide
+go get -d github.com/colebrumley/lxb
+cd $GOPATH/src/github.com/colebrumley/lxb
+export GO15VENDOREXPERIMENT=1
+glide up
+go build
+```
+
 ## usage
 ```bash
 NAME:
