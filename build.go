@@ -6,6 +6,7 @@ import (
 	"github.com/lxc/lxd"
 	"github.com/lxc/lxd/shared"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -70,7 +71,7 @@ func (b *Build) startBuildContainer() error {
 		resp *lxd.Response
 	)
 
-	if resp, err = b.client.Action(b.ID, shared.Start, 30, false); err != nil {
+	if resp, err = b.client.Action(b.ID, shared.Start, 30, false, false); err != nil {
 		log.Debugln("Failed during startBuildContainer")
 		return err
 	}
@@ -91,12 +92,16 @@ func (b *Build) startBuildContainer() error {
 			i++
 			continue
 		}
-		log.Debugf("[wait_for_net] status=%s IPs=%+v", s.Status, s.Ips)
-		if len(s.Ips) > 0 {
-			for _, ip := range s.Ips {
-				if ip.Interface != "lo" {
-					br = true
-					break
+		// log.Debugf("[wait_for_net] status=%s IPs=%+v", s.Status, s.Ips)
+		for name, netObj := range s.Network {
+			// All we care about is that there is a non-loopback interface
+			// that has a v4 IP and is up
+			if name != "lo" && len(netObj.Addresses) > 0 && netObj.State == "up" {
+				for _, a := range netObj.Addresses {
+					if a.Family == "inet" && a.Address != "127.0.0.1" {
+						br = true
+						break
+					}
 				}
 			}
 		}
@@ -110,7 +115,7 @@ func (b *Build) startBuildContainer() error {
 
 func (b *Build) stopBuildContainer() error {
 	log.Infoln("Stopping build container")
-	resp, err := b.client.Action(b.ID, shared.Stop, 30, true)
+	resp, err := b.client.Action(b.ID, shared.Stop, 30, true, false)
 	if err != nil {
 		log.Debugln("Failed during stopBuildContainer")
 		return err
@@ -164,16 +169,37 @@ func (b *Build) copyFiles() error {
 			log.Warnf("There's a problem with %s: %v", contextPath, err)
 			continue
 		}
-		f, err = os.Open(contextPath)
-		if err != nil {
-			log.Warnf("Could not open %s: %v", contextPath, err)
-			continue
+
+		if fInfo.IsDir() {
+			files, err := ioutil.ReadDir(fInfo.Name())
+			if err != nil {
+				log.Warnf("Could not open %s: %v", contextPath, err)
+				continue
+			}
+			for _, fi := range files {
+				f, err = os.Open(contextPath + "/" + fi.Name())
+				if err != nil {
+					log.Warnf("Could not open %s: %v", contextPath, err)
+					continue
+				}
+				if err = b.client.PushFile(b.ID, containerPath, 0, 0, fInfo.Mode(), f); err != nil {
+					log.Errorf("Failed to push %s: %v", contextPath, err)
+					continue
+				}
+				log.Debugf("Pushed %s to %s", fi.Name(), containerPath)
+			}
+		} else {
+			f, err = os.Open(contextPath)
+			if err != nil {
+				log.Warnf("Could not open %s: %v", contextPath, err)
+				continue
+			}
+			if err = b.client.PushFile(b.ID, containerPath, 0, 0, fInfo.Mode(), f); err != nil {
+				log.Errorf("Failed to push %s: %v", contextPath, err)
+				continue
+			}
+			log.Debugf("Pushed %s to %s", contextPath, containerPath)
 		}
-		if err = b.client.PushFile(b.ID, containerPath, 0, 0, fInfo.Mode(), f); err != nil {
-			log.Errorf("Failed to push %s: %v", contextPath, err)
-			continue
-		}
-		log.Debugf("Pushed %s to %s", contextPath, containerPath)
 	}
 	log.Debugln("Finished pushing files")
 	return err

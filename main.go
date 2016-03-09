@@ -49,20 +49,27 @@ func main() {
 }
 
 func build(c *cli.Context) {
+	var (
+		lxfile       = c.String("lxfile")
+		buildContext = c.String("context")
+		remote       = c.GlobalString("remote")
+	)
 	// Validate args
 	if c.GlobalBool("verbose") {
 		log.SetLevel(log.DebugLevel)
 	}
 
 	// Load the build spec
-	lxfile := c.String("lxfile")
-	buildContext := c.String("context")
-	if !fileExists(lxfile) || c.Args().First() == "-" {
+
+	if c.Args().First() == "-" {
 		b, err := ioutil.ReadAll(os.Stdin)
 		lxfile = string(b)
 		if err != nil {
 			log.Error(err)
 		}
+	} else if !fileExists(lxfile) {
+		log.Errorln("No lxfile found!")
+		os.Exit(1)
 	}
 	spec := LoadBuildSpec(lxfile)
 	log.Debugln("Loaded build spec")
@@ -79,7 +86,7 @@ func build(c *cli.Context) {
 	}
 
 	// connect to LXD
-	cl, err := lxd.NewClient(&lxd.DefaultConfig, c.GlobalString("remote"))
+	cl, err := lxd.NewClient(&lxd.DefaultConfig, remote)
 	if err != nil {
 		log.Error(err)
 	}
@@ -89,7 +96,7 @@ func build(c *cli.Context) {
 	log.Debugln("Connected to LXD")
 
 	// create build object
-	b := NewBuild(spec, cl, c.GlobalString("remote"))
+	b := NewBuild(spec, cl, remote)
 	log.Infoln("Starting build")
 	if err := b.Execute(c.Bool("keep")); err != nil {
 		log.Error(err)
