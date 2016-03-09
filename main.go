@@ -59,8 +59,18 @@ func build(c *cli.Context) {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	// Load the build spec
+	// validate the context dir
+	contextAbsPath := asrt(filepath.Abs(buildContext)).(string)
+	if !dirExists(contextAbsPath) {
+		log.Errorln("Build context directory does not exist!")
+	}
 
+	// move to context dir
+	if err := os.Chdir(contextAbsPath); err != nil {
+		log.Error(err)
+	}
+
+	// Load the build spec
 	if c.Args().First() == "-" {
 		b, err := ioutil.ReadAll(os.Stdin)
 		lxfile = string(b)
@@ -73,17 +83,6 @@ func build(c *cli.Context) {
 	}
 	spec := LoadBuildSpec(lxfile)
 	log.Debugln("Loaded build spec")
-
-	// validate the context dir
-	contextAbsPath := asrt(filepath.Abs(buildContext)).(string)
-	if !dirExists(contextAbsPath) {
-		log.Errorln("Build context directory does not exist!")
-	}
-
-	// move to context dir
-	if err := os.Chdir(contextAbsPath); err != nil {
-		log.Error(err)
-	}
 
 	// connect to LXD
 	cl, err := lxd.NewClient(&lxd.DefaultConfig, remote)
