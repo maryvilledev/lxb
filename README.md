@@ -56,6 +56,10 @@ build_profiles:
 build_config:
   # See https://github.com/lxc/lxd/blob/master/specs/configuration.md#container-configuration
   limits.memory: 512MB
+files:
+  # Use relative paths from the context directory
+  # files will be copied with the same permissions (but owned by root)
+  - test.txt:/opt/test.txt
 env:
   BUILD_ENV: dev
   CONTAINERIZED: true
