@@ -1,4 +1,4 @@
-# LXB - LXC Builder
+# LXB - LXD Image Builder
 
 LXB is an attempt to bring a little of the Docker image creation magic to LXD with an automated, templated build file.
 
@@ -23,14 +23,15 @@ USAGE:
    lxb [global options] [arguments...]
 
 VERSION:
-   0.0.1
+   0.0.2
 
 GLOBAL OPTIONS:
-   --lxfile, -f "lxfile.yml"	Path to the build spec
-   --context, -c "./"		Path to the build context
-   --keep, -k			Don't remove the build container when complete
-   --verbose			Print extra debugging output
-   --remote "local"		LXD daemon address [$LXB_REMOTE]
+   --lxfile, -f "lxfile.yml"  Path to the build spec
+   --context, -c "./"   Path to the build context
+   --keep, -k     Don't remove the build container when complete
+   --verbose      Print extra debugging output
+   --remote "local"   LXD daemon address [$LXB_REMOTE]
+   --version, -v    print the version
 ```
 The process is similar to building a Docker image. Call `lxb` either in the build context directory (only important if your `lxfile.yml` uses `files`), or pass the `-c` flag.
 
@@ -44,21 +45,17 @@ The only key that is _strictly_ required is `baseimg`, all other keys will be ig
 **Example:**
 
 ```yaml
-baseimg: jessie
+baseimg: trusty
 image_properties:
-  description: Apache2 on Debian Jessie x64
+  description: Apache2 on Ubuntu Trusty x64
 image_aliases:
-  - jessie-apache2
+  - trusty-apache2
 public: true
 build_profiles:
   - default
 build_config:
   # See https://github.com/lxc/lxd/blob/master/specs/configuration.md#container-configuration
   limits.memory: 512MB
-files:
-  # Use relative paths from the context directory
-  # files will be copied with the same permissions (but owned by root)
-  - test.txt:/opt/test.txt
 env:
   BUILD_ENV: dev
   CONTAINERIZED: true
