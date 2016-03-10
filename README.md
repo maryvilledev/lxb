@@ -42,9 +42,12 @@ Lxfiles are YAML files (just for you @jimmymac) that contain specifications for 
 
 The only key that is _strictly_ required is `baseimg`, all other keys will be ignored if they are omitted.
 
+*You must run `lxb` as root if your `lxfile.yml` includes templates.* This is due to the fact that LXD does not support modifying templates through the API, so we've got to modify files on disk under `/var/lib/lxd`. This requires root access. See [this issue](https://github.com/lxc/lxd/issues/1729) for details.
+
 **Example:**
 
 ```yaml
+# This can be an alias or hash, but must be a local image
 baseimg: trusty
 image_properties:
   description: Apache2 on Ubuntu Trusty x64
