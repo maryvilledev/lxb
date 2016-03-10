@@ -33,7 +33,7 @@ GLOBAL OPTIONS:
    --remote "local"   LXD daemon address [$LXB_REMOTE]
    --version, -v    print the version
 ```
-The process is similar to building a Docker image. Call `lxb` either in the build context directory (only important if your `lxfile.yml` uses `files`), or pass the `-c` flag.
+The process is similar to building a Docker image. Call `lxb` either in the build context directory (only important if your `lxfile.yml` uses `files` or `templates`), or pass the `-c` flag.
 
 The build config can be supplied by providing nothing (in which case `./lxfile.yml` is loaded), the `--lxfile` flag, or by passing `-` as the first argument (which will read from stdin).
 
@@ -60,6 +60,11 @@ files:
   # Use relative paths from the context directory
   # files will be copied with the same permissions (but owned by root)
   - test.txt:/opt/test.txt
+templates:
+  # Use relative paths from the context directory
+  # Templates will be evaluated on create only and no properties will be set
+  # See https://github.com/lxc/lxd/blob/master/specs/image-handling.md#content
+  - file.tmpl:/dest/file.tmpl
 env:
   BUILD_ENV: dev
   CONTAINERIZED: true
