@@ -15,7 +15,6 @@ func main() {
 	app.HelpName = "lxb"
 	app.Version = "0.0.2"
 	app.HideHelp = true
-	app.HideVersion = true
 	app.Usage = "LXD Image Builder"
 	app.ArgsUsage = ""
 	app.Action = build

@@ -15,6 +15,7 @@ type BuildSpec struct {
 	Env           map[string]string `yaml:"env,omitempty"`
 	Cmd           []string          `yaml:"cmd,omitempty"`
 	Files         []string          `yaml:"files,omitempty"`
+	Templates     []string          `yaml:"templates,omitempty"`
 }
 
 // LoadBuildSpec takes a string argument that is either a path to a YML file

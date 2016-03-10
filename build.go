@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/lxc/lxd"
@@ -8,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -32,6 +34,7 @@ func (b *Build) Execute(keepContainer bool) error {
 		b.createBuildContainer,
 		b.startBuildContainer,
 		b.copyFiles,
+		b.addTemplates,
 		b.runCommands,
 		b.stopBuildContainer,
 		b.saveImageFromContainer,
@@ -146,6 +149,66 @@ func (b *Build) removeBuildContainer() error {
 		return err
 	}
 	return b.client.WaitForSuccess(resp.Operation)
+}
+
+func (b *Build) addTemplates() error {
+	log.Infoln("Adding templates to container")
+	containerBaseDir := "/var/lib/lxd/containers/" + b.ID
+	metaFile := containerBaseDir + "/" + "metadata.yaml"
+
+	if !dirExists(containerBaseDir) {
+		return fmt.Errorf("Directory %s does not exist!", containerBaseDir)
+	}
+
+	if !fileExists(metaFile) {
+		return fmt.Errorf("Metadata file %s does not exist!", metaFile)
+	}
+
+	f, err := os.Open(metaFile)
+	if err != nil {
+		return err
+	}
+
+	contents, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+
+	var metaInterface map[string]interface{}
+	if err = json.Unmarshal(contents, &metaInterface); err != nil {
+		return err
+	}
+
+	tmpl := metaInterface["templates"].(map[string]interface{})
+	for _, t := range b.spec.Templates {
+		split := strings.SplitN(t, ":", 2)
+		srcFile := split[0]
+		destFile := split[1]
+
+		log.Debugf("Template %s will be placed at %s", srcFile, destFile)
+		tmplEntry := struct {
+			Template string   `json:"template"`
+			When     []string `json:"when"`
+		}{
+			Template: srcFile,
+			When:     []string{"create"},
+		}
+
+		tmpl[destFile] = tmplEntry
+		tmplFilePath := containerBaseDir + "/templates/" + filepath.Base(srcFile)
+		log.Debugf("Copying %s to %s", srcFile, tmplFilePath)
+		if _, err := Copy(srcFile, tmplFilePath); err != nil {
+			return err
+		}
+	}
+
+	result, err := json.Marshal(metaInterface)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(metaFile, result, 0644)
+	return err
 }
 
 func (b *Build) copyFiles() error {
