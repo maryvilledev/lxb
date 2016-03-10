@@ -13,7 +13,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "lxb"
 	app.HelpName = "lxb"
-	app.Version = "0.0.2"
+	app.Version = "0.0.3"
 	app.HideHelp = true
 	app.Usage = "LXD Image Builder"
 	app.ArgsUsage = ""
