@@ -23,7 +23,7 @@ USAGE:
    lxb [global options] [arguments...]
 
 VERSION:
-   0.0.2
+   0.0.3
 
 GLOBAL OPTIONS:
    --lxfile, -f "lxfile.yml"  Path to the build spec
