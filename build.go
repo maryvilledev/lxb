@@ -152,63 +152,66 @@ func (b *Build) removeBuildContainer() error {
 }
 
 func (b *Build) addTemplates() error {
-	log.Infoln("Adding templates to container")
-	containerBaseDir := "/var/lib/lxd/containers/" + b.ID
-	metaFile := containerBaseDir + "/" + "metadata.yaml"
+	if len(b.spec.Templates) > 0 {
+		log.Infoln("Adding templates to container")
+		containerBaseDir := "/var/lib/lxd/containers/" + b.ID
+		metaFile := containerBaseDir + "/metadata.yaml"
 
-	if !dirExists(containerBaseDir) {
-		return fmt.Errorf("Directory %s does not exist!", containerBaseDir)
-	}
-
-	if !fileExists(metaFile) {
-		return fmt.Errorf("Metadata file %s does not exist!", metaFile)
-	}
-
-	f, err := os.Open(metaFile)
-	if err != nil {
-		return err
-	}
-
-	contents, err := ioutil.ReadAll(f)
-	if err != nil {
-		return err
-	}
-
-	var metaInterface map[string]interface{}
-	if err = json.Unmarshal(contents, &metaInterface); err != nil {
-		return err
-	}
-
-	tmpl := metaInterface["templates"].(map[string]interface{})
-	for _, t := range b.spec.Templates {
-		split := strings.SplitN(t, ":", 2)
-		srcFile := split[0]
-		destFile := split[1]
-
-		log.Debugf("Template %s will be placed at %s", srcFile, destFile)
-		tmplEntry := struct {
-			Template string   `json:"template"`
-			When     []string `json:"when"`
-		}{
-			Template: srcFile,
-			When:     []string{"create"},
+		if !dirExists(containerBaseDir) {
+			return fmt.Errorf("Directory %s does not exist!", containerBaseDir)
 		}
 
-		tmpl[destFile] = tmplEntry
-		tmplFilePath := containerBaseDir + "/templates/" + filepath.Base(srcFile)
-		log.Debugf("Copying %s to %s", srcFile, tmplFilePath)
-		if _, err := Copy(srcFile, tmplFilePath); err != nil {
+		if !fileExists(metaFile) {
+			return fmt.Errorf("Metadata file %s does not exist!", metaFile)
+		}
+
+		f, err := os.Open(metaFile)
+		if err != nil {
 			return err
 		}
-	}
 
-	result, err := json.Marshal(metaInterface)
-	if err != nil {
+		contents, err := ioutil.ReadAll(f)
+		if err != nil {
+			return err
+		}
+
+		var metaInterface map[string]interface{}
+		if err = json.Unmarshal(contents, &metaInterface); err != nil {
+			return err
+		}
+
+		tmpl := metaInterface["templates"].(map[string]interface{})
+		for _, t := range b.spec.Templates {
+			split := strings.SplitN(t, ":", 2)
+			srcFile := split[0]
+			destFile := split[1]
+
+			log.Debugf("Template %s will be placed at %s", srcFile, destFile)
+			tmplEntry := struct {
+				Template string   `json:"template"`
+				When     []string `json:"when"`
+			}{
+				Template: srcFile,
+				When:     []string{"create"},
+			}
+
+			tmpl[destFile] = tmplEntry
+			tmplFilePath := containerBaseDir + "/templates/" + filepath.Base(srcFile)
+			log.Debugf("Copying %s to %s", srcFile, tmplFilePath)
+			if _, err := Copy(srcFile, tmplFilePath); err != nil {
+				return err
+			}
+		}
+
+		result, err := json.Marshal(metaInterface)
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(metaFile, result, 0644)
 		return err
 	}
-
-	err = ioutil.WriteFile(metaFile, result, 0644)
-	return err
+	return nil
 }
 
 func (b *Build) copyFiles() error {
@@ -272,16 +275,15 @@ func (b *Build) runCommands() error {
 	log.Infoln("Executing build commands")
 	for _, c := range b.spec.Cmd {
 		log.Debugf("Executing command: %s", c)
-		if _, err := b.client.Exec(b.ID,
+		if code, err := b.client.Exec(b.ID,
 			[]string{"/bin/sh", "-c", c},
 			b.spec.Env,
 			nil,
 			os.Stdout,
 			os.Stderr,
 			func(l *lxd.Client, w *websocket.Conn) {},
-		); err != nil {
-			log.Debugln("Failed during build command %s", c)
-			return err
+		); err != nil || code != 0 {
+			return fmt.Errorf("Failed during build command %s: Exit code %v Error: %v", c, code, err)
 		}
 	}
 	return nil
