@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/lxc/lxd"
 	"github.com/lxc/lxd/shared"
+	"github.com/lxc/lxd/shared/api"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -76,7 +77,7 @@ func (b *Build) startBuildContainer() error {
 	log.Debugln("Starting build container")
 	var (
 		err  error
-		resp *lxd.Response
+		resp *api.Response
 	)
 
 	if resp, err = b.client.Action(b.ID, shared.Start, 30, false, false); err != nil {
