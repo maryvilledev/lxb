@@ -3,23 +3,26 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"github.com/lxc/lxd"
-	"github.com/lxc/lxd/shared"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"github.com/lxc/lxd"
+	"github.com/lxc/lxd/shared"
+	log "github.com/sirupsen/logrus"
 )
 
+// Build represents the entirety of the build job
 type Build struct {
-	ID, Remote, imgId string
+	ID, Remote, imgID string
 	spec              *BuildSpec
 	client            *lxd.Client
 }
 
+// NewBuild generates a new Build
 func NewBuild(spec *BuildSpec, client *lxd.Client, remote string) *Build {
 	return &Build{
 		spec:   spec,
@@ -29,6 +32,7 @@ func NewBuild(spec *BuildSpec, client *lxd.Client, remote string) *Build {
 	}
 }
 
+// Execute runs commands in a container
 func (b *Build) Execute(keepContainer bool) error {
 	farray := []func() error{
 		b.createBuildContainer,
@@ -58,6 +62,7 @@ func (b *Build) createBuildContainer() error {
 		b.spec.BaseImg,
 		&b.spec.BuildProfiles,
 		b.spec.BuildConfig,
+		b.spec.Devices,
 		false)
 	if err != nil {
 		log.Debugln("Failed during createBuildContainer")
@@ -129,14 +134,15 @@ func (b *Build) stopBuildContainer() error {
 func (b *Build) saveImageFromContainer() error {
 	log.Infoln("Creating image from build container")
 	var err error
-	b.imgId, err = b.client.ImageFromContainer(
+	b.imgID, err = b.client.ImageFromContainer(
 		b.ID,
 		b.spec.Public,
 		b.spec.ImgAliases,
 		b.spec.ImgProperties,
+		b.spec.CompressionAlgo,
 	)
 	if err == nil {
-		log.Infoln("Created image", b.imgId)
+		log.Infoln("Created image", b.imgID)
 	}
 	return err
 }
@@ -248,7 +254,7 @@ func (b *Build) copyFiles() error {
 					log.Warnf("Could not open %s: %v", contextPath, err)
 					continue
 				}
-				if err = b.client.PushFile(b.ID, containerPath, 0, 0, fInfo.Mode(), f); err != nil {
+				if err = b.client.PushFile(b.ID, containerPath, 0, 0, fInfo.Mode().String(), f); err != nil {
 					log.Errorf("Failed to push %s: %v", contextPath, err)
 					continue
 				}
@@ -260,7 +266,7 @@ func (b *Build) copyFiles() error {
 				log.Warnf("Could not open %s: %v", contextPath, err)
 				continue
 			}
-			if err = b.client.PushFile(b.ID, containerPath, 0, 0, fInfo.Mode(), f); err != nil {
+			if err = b.client.PushFile(b.ID, containerPath, 0, 0, fInfo.Mode().String(), f); err != nil {
 				log.Errorf("Failed to push %s: %v", contextPath, err)
 				continue
 			}
@@ -282,7 +288,7 @@ func (b *Build) runCommands() error {
 			os.Stdout,
 			os.Stderr,
 			func(l *lxd.Client, w *websocket.Conn) {},
-		); err != nil || code != 0 {
+			80, 24); err != nil || code != 0 {
 			return fmt.Errorf("Failed during build command %s: Exit code %v Error: %v", c, code, err)
 		}
 	}

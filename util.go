@@ -2,15 +2,19 @@ package main
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
+	// ERROR is logrus' error level
 	ERROR = log.ErrorLevel
+	// FATAL is logrus' fatal level
 	FATAL = log.FatalLevel
-	WARN  = log.WarnLevel
+	// WARN is logrus' warning level
+	WARN = log.WarnLevel
 )
 
 func asrt(iface interface{}, err error) interface{} {
@@ -36,26 +40,27 @@ func dirExists(name string) bool {
 	return true
 }
 
+// Copy copies files into/out of containers
 func Copy(src, dst string) (int64, error) {
-	src_file, err := os.Open(src)
+	srcFile, err := os.Open(src)
 	if err != nil {
 		return 0, err
 	}
-	defer src_file.Close()
+	defer srcFile.Close()
 
-	src_file_stat, err := src_file.Stat()
+	srcFileStat, err := srcFile.Stat()
 	if err != nil {
 		return 0, err
 	}
 
-	if !src_file_stat.Mode().IsRegular() {
+	if !srcFileStat.Mode().IsRegular() {
 		return 0, fmt.Errorf("%s is not a regular file", src)
 	}
 
-	dst_file, err := os.Create(dst)
+	dstFile, err := os.Create(dst)
 	if err != nil {
 		return 0, err
 	}
-	defer dst_file.Close()
-	return io.Copy(dst_file, src_file)
+	defer dstFile.Close()
+	return io.Copy(dstFile, srcFile)
 }
