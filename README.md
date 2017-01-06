@@ -2,11 +2,11 @@
 
 LXB is an attempt to bring a little of the Docker image creation magic to LXD with an automated, templated build file.
 
-If you're lucky enough to have all the dependencies (and their correct versions) on your machine, you can use `go get` to install: `go get github.com/colebrumley/lxb`. More realistically, you'll want to use `glide` to make sure your dependencies are up to date with mine (LXD evolves rapidly and breaking changes are likely):
+If you're lucky enough to have all the dependencies (and their correct versions) on your machine, you can use `go get` to install: `go get github.com/maryvilledev/lxb`. More realistically, you'll want to use `glide` to make sure your dependencies are up to date with mine (LXD evolves rapidly and breaking changes are likely):
 ```bash
 go get github.com/Masterminds/glide
-go get -d github.com/colebrumley/lxb
-cd $GOPATH/src/github.com/colebrumley/lxb
+go get -d github.com/maryvilledev/lxb
+cd $GOPATH/src/github.com/maryvilledev/lxb
 export GO15VENDOREXPERIMENT=1
 glide up
 go build

@@ -1,4 +1,4 @@
-package: github.com/colebrumley/lxb
+package: github.com/maryvilledev/lxb
 import:
 - package: github.com/codegangsta/cli
   version: 5db74198dee1cfe60cf06a611d03a420361baad6
