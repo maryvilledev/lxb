@@ -1,14 +1,12 @@
 package: github.com/maryvilledev/lxb
 import:
 - package: github.com/codegangsta/cli
-  version: 5db74198dee1cfe60cf06a611d03a420361baad6
+  version: ^1.19.1
 - package: github.com/gorilla/websocket
-  version: 4935ba31a2adbfcd9e08b86d2657659afbf1af9a
+  version: ^1.1.0
 - package: github.com/lxc/lxd
-  version: 021611a2603210baab3e827dd3d17ac3b3690f50
   subpackages:
   - shared
 - package: github.com/sirupsen/logrus
-  version: 3455d89ac9652295c85db2a98ea32f1d61c380bc
+  repo: https://github.com/sirupsen/logrus.git
 - package: gopkg.in/yaml.v2
-  version: f7716cbe52baa25d2e9b0d0da546fcf909fc16b4
