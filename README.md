@@ -57,7 +57,7 @@ public: true
 build_profiles:
   - default
 build_config:
-  # See https://github.com/lxc/lxd/blob/master/specs/configuration.md#container-configuration
+  # See https://github.com/lxc/lxd/blob/master/doc/configuration.md#container-configuration
   limits.memory: 512MB
 files:
   # Use relative paths from the context directory
@@ -66,7 +66,7 @@ files:
 templates:
   # Use relative paths from the context directory
   # Templates will be evaluated on create only and no properties will be set
-  # See https://github.com/lxc/lxd/blob/master/specs/image-handling.md#content
+  # See https://github.com/lxc/lxd/blob/master/doc/image-handling.md#content
   - file.tmpl:/dest/file.tmpl
 env:
   BUILD_ENV: dev
