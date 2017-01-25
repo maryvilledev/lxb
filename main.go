@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
@@ -88,7 +89,20 @@ func build(c *cli.Context) {
 	log.Debugln("Loaded build spec")
 
 	// connect to LXD
-	cl, err := lxd.NewClient(&lxd.DefaultConfig, remote)
+	configDir := "$HOME/.config/lxc"
+	if os.Getenv("LXD_CONF") != "" {
+		configDir = os.Getenv("LXD_CONF")
+	}
+	configPath := os.ExpandEnv(path.Join(configDir, "config.yml"))
+	config, err := lxd.LoadConfig(configPath)
+	if err != nil {
+		log.Debug(err)
+		config = &lxd.DefaultConfig
+	}
+
+	realRemote := config.ParseRemote(remote)
+	log.Debugf("Connecting to remote %s", realRemote)
+	cl, err := lxd.NewClient(config, realRemote)
 	if err != nil {
 		log.Error(err)
 	}
