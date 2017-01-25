@@ -1,19 +1,23 @@
 package main
 
 import (
-	"github.com/codegangsta/cli"
-	"github.com/lxc/lxd"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/codegangsta/cli"
+	"github.com/lxc/lxd"
+	log "github.com/sirupsen/logrus"
 )
+
+// AppVersion is the global application version
+var AppVersion string
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "lxb"
 	app.HelpName = "lxb"
-	app.Version = "0.0.3"
+	app.Version = AppVersion
 	app.HideHelp = true
 	app.Usage = "LXD Image Builder"
 	app.ArgsUsage = ""
