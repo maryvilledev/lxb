@@ -37,12 +37,18 @@ The process is similar to building a Docker image. Call `lxb` either in the buil
 
 The build config can be supplied by providing nothing (in which case `./lxfile.yml` is loaded), the `--lxfile` flag, or by passing `-` as the first argument (which will read from stdin).
 
+The LXD config is loaded from either the standard location (`~/.config/lxc/config.yml`) or the `LXD_CONF` environment variable, just like LXD itself.
+
 ## lxfile usage
 Lxfiles are YAML files (just for you @jimmymac) that contain specifications for both the build container and the resulting image.
 
 The only key that is _strictly_ required is `baseimg`, all other keys will be ignored if they are omitted.
 
-*You must run `lxb` as root if your `lxfile.yml` includes templates.* This is due to the fact that LXD does not support modifying templates through the API, so we've got to modify files on disk under `/var/lib/lxd`. This requires root access. See [this issue](https://github.com/lxc/lxd/issues/1729) for details.
+#### Note on templates and files
+There are a few gotchas regarding templates and files:
+
+  - *You must run `lxb` as root and use a local daemon if your `lxfile.yml` includes templates.* This is due to the fact that LXD does not support modifying templates through the API, so we've got to modify files on disk under `/var/lib/lxd`. This requires root access. See [this issue](https://github.com/lxc/lxd/issues/1729) for details.
+  - Older builds of LXD do not allow files to be manipulated via the API. Lxb attempts to copy files directly in this case too, and so will need to be run against a local daemon as root.
 
 **Example:**
 
