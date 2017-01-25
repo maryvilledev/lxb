@@ -16,6 +16,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// DirectoryManipulation is the const for LXD's `directory_manipulation` API extension
+const DirectoryManipulation = "directory_manipulation"
+
 // Build represents the entirety of the build job
 type Build struct {
 	ID, Remote, imgID string
@@ -223,19 +226,63 @@ func (b *Build) addTemplates() error {
 
 func (b *Build) copyFiles() error {
 	var err error
+	if len(b.spec.Files) < 1 {
+		return err
+	}
+
+	if hasExtension(b.client, DirectoryManipulation) {
+		err = b.apiCopyFiles()
+	} else {
+		err = b.manualCopyFiles()
+	}
+	return err
+}
+
+func (b *Build) apiCopyFiles() error {
+	for _, fileString := range b.spec.Files {
+		contextPath, containerPath, err := splitFilePath(fileString)
+		if err != nil {
+			return err
+		}
+
+		fi, err := os.Stat(contextPath)
+		if err != nil {
+			return err
+		}
+
+		// Push recursively if this is a dir
+		if fi.IsDir() {
+			if err = b.client.RecursivePushFile(b.ID, contextPath, containerPath); err != nil {
+				return err
+			}
+			continue
+		}
+
+		// Otherwise push normally
+		file, err := os.Open(contextPath)
+		if err != nil {
+			return err
+		}
+		if err = b.client.PushFile(b.ID, containerPath, -1, -1, fi.Mode().String(), file); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b *Build) manualCopyFiles() error {
+	var err error
 	log.Infoln("Pushing files into container")
 	for _, fileString := range b.spec.Files {
 		var (
 			fInfo os.FileInfo
 			f     *os.File
 		)
-		split := strings.SplitN(fileString, ":", 2)
-		if len(split) != 2 {
-			log.Warnf("Incorrect file path format: %s", f)
+		contextPath, containerPath, err := splitFilePath(fileString)
+		if err != nil {
+			log.Warn(err)
 			continue
 		}
-		contextPath := split[0]
-		containerPath := split[1]
 
 		fInfo, err = os.Stat(contextPath)
 		if err != nil {

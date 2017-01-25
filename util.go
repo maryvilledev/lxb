@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/lxc/lxd"
 	log "github.com/sirupsen/logrus"
@@ -76,4 +77,15 @@ func hasExtension(client *lxd.Client, extension string) bool {
 		}
 	}
 	return r
+}
+
+func splitFilePath(path string) (contextPath, containerPath string, err error) {
+	split := strings.SplitN(path, ":", 2)
+	if len(split) != 2 {
+		err = fmt.Errorf("Incorrect file path format: %s", path)
+		return
+	}
+	contextPath = split[0]
+	containerPath = split[1]
+	return
 }
