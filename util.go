@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/lxc/lxd"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -63,4 +64,16 @@ func Copy(src, dst string) (int64, error) {
 	}
 	defer dstFile.Close()
 	return io.Copy(dstFile, srcFile)
+}
+
+func hasExtension(client *lxd.Client, extension string) bool {
+	r := false
+	s, _ := client.ServerStatus()
+	for _, ext := range s.APIExtensions {
+		if ext == extension {
+			r = true
+			break
+		}
+	}
+	return r
 }
