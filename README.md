@@ -2,17 +2,12 @@
 
 LXB is an attempt to bring a little of the Docker image creation magic to LXD with an automated, templated build file.
 
-If you're lucky enough to have all the dependencies (and their correct versions) on your machine, you can use `go get` to install: `go get github.com/maryvilledev/lxb`. More realistically, you'll want to use `glide` to make sure your dependencies are up to date with mine (LXD evolves rapidly and breaking changes are likely):
+Use make to build:
 ```bash
-go get github.com/Masterminds/glide
 go get -d github.com/maryvilledev/lxb
 cd $GOPATH/src/github.com/maryvilledev/lxb
-export GO15VENDOREXPERIMENT=1
-glide up
-go build
+make
 ```
-
-Currently you must run LXB on a host running LXD since LXB is hard coded to look for a local unix socket. In the future I'd like to add support for calling remote daemons. You can however _work_ on a remote via the local daemon with the `--remote` flag.
 
 ## usage
 ```bash
@@ -23,7 +18,7 @@ USAGE:
    lxb [global options] [arguments...]
 
 VERSION:
-   0.0.3
+   0.1.0
 
 GLOBAL OPTIONS:
    --lxfile, -f "lxfile.yml"  Path to the build spec
@@ -87,6 +82,3 @@ cmd:
   - apt-get -y install apache2
   - apt-get -y clean
 ```
-
-## Fair warning
-This is a _highly_ experimental project that should not be relied upon for anything. Ever. I sincerely hope you can build something with it (and maybe even send a PR if you fix something), but at this point it's mostly an exercise in working with LXD programmatically.

@@ -1,6 +1,6 @@
 GO_REPO = github.com/maryvilledev/lxb
 GO_INSTALL_PATH = /usr/local/bin/lxb
-VERSION = 0.0.3
+VERSION = 0.1.0
 
 # the go binary will be named lxb_<os>_<arch>
 GO_BIN_NAME = lxb_$$(uname -s -m | tr '[:upper:]' '[:lower:]' | tr ' ' '_')
