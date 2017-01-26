@@ -42,7 +42,7 @@ The LXD config is loaded from either the standard location (`~/.config/lxc/confi
 ## lxfile usage
 Lxfiles are YAML files (just for you @jimmymac) that contain specifications for both the build container and the resulting image.
 
-The only key that is _strictly_ required is `baseimg`, all other keys will be ignored if they are omitted. At least one network is required. Lxb attempts to use defaults if none is specified in the lxfile.
+The only key that is _strictly_ required is `baseimg`, all other keys will be ignored if they are omitted with the exception of `build_networks`. At least one network is required, but Lxb attempts to use defaults if none is specified in the lxfile.
 
 #### Note on templates and files
 There are a few gotchas regarding templates and files:
