@@ -5,7 +5,7 @@ import:
 - package: github.com/gorilla/websocket
   version: ^1.1.0
 - package: github.com/lxc/lxd
-  version: 06fb1bad37e45da2884bb36571040f7a4587ed82
+  version: e900d56c2bc2b78cef6cffb3073c23632a44abcd
   subpackages:
   - shared
 - package: github.com/sirupsen/logrus
