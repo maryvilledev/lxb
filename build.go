@@ -75,11 +75,8 @@ func (b *Build) createBuildContainer() error {
 		}
 	}
 
-	if len(b.spec.BuildNetworks) < 1 {
-		return fmt.Errorf("No valid networks found! Please specify one in your lxfile.")
-	}
-
-	if b.spec.Devices == nil {
+	// We only add devices if there are networks
+	if b.spec.Devices == nil && len(b.spec.BuildNetworks) > 0 {
 		b.spec.Devices = map[string]map[string]string{}
 	}
 
