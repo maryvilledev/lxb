@@ -60,6 +60,43 @@ func (b *Build) Execute(keepContainer bool) error {
 
 func (b *Build) createBuildContainer() error {
 	log.Infoln("Creating build container")
+
+	// If we have no BuildNetworks defined in the lxfile
+	// try some defaults
+	if len(b.spec.BuildNetworks) < 1 {
+		b.spec.BuildNetworks = []string{}
+		for _, n := range []string{"default", "lxcbr0"} {
+			_, err := b.client.NetworkGet(n)
+			if err != nil {
+				continue
+			}
+			b.spec.BuildNetworks = append(b.spec.BuildNetworks, n)
+			break
+		}
+	}
+
+	if len(b.spec.BuildNetworks) < 1 {
+		return fmt.Errorf("No valid networks found! Please specify one in your lxfile.")
+	}
+
+	if b.spec.Devices == nil {
+		b.spec.Devices = map[string]map[string]string{}
+	}
+
+	for _, net := range b.spec.BuildNetworks {
+		network, err := b.client.NetworkGet(net)
+		if err != nil {
+			log.Debug(err)
+			continue
+		}
+
+		if network.Type == "bridge" {
+			b.spec.Devices[net] = map[string]string{"type": "nic", "nictype": "bridged", "parent": net}
+		} else {
+			b.spec.Devices[net] = map[string]string{"type": "nic", "nictype": "macvlan", "parent": net}
+		}
+	}
+
 	resp, err := b.client.Init(
 		b.ID,
 		b.Remote,
@@ -92,6 +129,8 @@ func (b *Build) startBuildContainer() error {
 		log.Debugln("Failed during startBuildContainer")
 		return err
 	}
+
+	b.client.NetworkPut("default", api.NetworkPut{Config: map[string]string{}})
 
 	log.Infoln("Waiting for network connectivity")
 	i := 0

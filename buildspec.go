@@ -13,6 +13,7 @@ type BuildSpec struct {
 	ImgProperties   map[string]string            `yaml:"image_properties,omitempty"`
 	Public          bool                         `yaml:"public,omitempty"`
 	BuildProfiles   []string                     `yaml:"build_profiles,omitempty"`
+	BuildNetworks   []string                     `yaml:"build_networks,omitempty"`
 	BuildConfig     map[string]string            `yaml:"build_config,omitempty"`
 	CompressionAlgo string                       `yaml:"compression,omitempty"`
 	Devices         map[string]map[string]string `yaml:"devices,omitempty"`
